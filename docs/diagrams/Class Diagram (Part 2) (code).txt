@@ -1,0 +1,164 @@
+@startuml
+title Диаграмма классов (Часть 2)
+
+package "Участники и доступ" {
+
+  class Clinic {
+    - clinic_id : String
+    - public_key : PublicKey
+    - isMember : bool
+    + vote(block : Block) : Signature
+  }
+
+  class ClinicRepresentative {
+    - rep_id : String
+    - clinic_id : String
+    + vote(block : Block) : Signature
+  }
+
+  class Doctor {
+    - doctor_id : String
+    - clinic_id : String
+    - public_key : PublicKey
+    - private_key : PrivateKey
+    + createRecord(patient : Patient, data : bytes) : MedicalRecord
+  }
+
+  class Patient {
+    - patient_id : String
+    - public_key : PublicKey
+    - private_key : PrivateKey
+    + readOwnRecords() : List<MedicalRecord>
+    + verifyRecord(record : MedicalRecord) : bool
+  }
+
+  class MedicalRecord {
+    - id : UUID
+    - patient_id : String
+    - patient_pubkey : PublicKey
+    - doctor_id : String
+    - timestamp : DateTime
+    - schema_version : String
+    - encrypted_payload_hash : Hash
+    - encrypted_payload_ref : String
+    - doctor_signature : Signature
+    + verify() : bool
+  }
+
+  class Credential {
+    - credential_id : UUID
+    - doctor_id : String
+    - clinic_id : String
+    - issued_at : DateTime
+    - expires_at : DateTime
+    - clinic_signature : Signature
+  }
+
+  class CredentialRevocation {
+    - credential_id : UUID
+    - revoked_by : String
+    - reason : String
+    - revoked_at : DateTime
+  }
+
+  class ClinicRegistry {
+    - clinic_id : String
+    - public_key : PublicKey
+    - status : String
+    - voters : List<String>
+  }
+
+  class PatientRegistry {
+    - patient_id : String
+    - public_key : PublicKey
+    - registered_at : DateTime
+  }
+
+  ' ---------- Связи ----------
+  Clinic "1" *-- "1" ClinicRepresentative : представляет
+  Clinic "1" o-- "0..*" Doctor : работает в
+  Clinic "1" o-- "0..*" Credential : выдаёт
+  Clinic "1" o-- "0..*" ClinicRegistry : регистрируется в
+
+  Doctor "1" -- "0..*" MedicalRecord : создаёт и подписывает
+  Doctor "1" -- "0..*" Credential : владеет
+
+  Patient "1" -- "0..*" MedicalRecord : принадлежит
+  Patient "1" -- "1" PatientRegistry : регистрируется в
+
+  CredentialRevocation ..> Credential : отзывает
+  CredentialRevocation --> Clinic : может быть инициирован
+  CredentialRevocation --> ClinicRepresentative : или консорциумом
+
+  note right of MedicalRecord
+    Открытые метаданные — в блоке.
+    Зашифрованный блоб — отдельно.
+    Подпись врача — неотказуемость.
+  end note
+
+  note bottom of Patient
+    Ключ — кастодиально на узлах.
+    Расшифровка — на устройстве.
+  end note
+
+}
+@enduml
+  class Block {
+    - id : UUID
+    - type : BlockType
+    - timestamp : DateTime
+    - prev_hash : Hash
+    - hash : Hash
+    - signatures : List<Signature>
+    + verify() : bool
+    + canonicalize() : bytes
+  }
+
+  enum BlockType {
+    medical_record
+    clinic_registry
+    credential
+    credential_revocation
+  }
+
+  class Node {
+    - node_id : String
+    - chain : List<Block>
+    - blobs : Map<String, Blob>
+    + syncWith(other : Node) : void
+    + validateChain() : bool
+    + addBlock(block : Block) : bool
+  }
+
+  class Consensus {
+    - quorum : int
+    + collectVotes(block : Block, nodes : List<Node>) : bool
+    + isAccepted(block : Block) : bool
+  }
+
+  class Blob {
+    - ref : String
+    - encrypted_data : bytes
+    - hash : Hash
+  }
+
+  Block --> BlockType : type
+  Node "1" *-- "0..*" Block : chain
+  Node "1" *-- "0..*" Blob : blobs
+  Node --> Consensus : запускает
+  Consensus --> Block : координирует
+  Block ..> Blob : ссылается на (encrypted_payload_ref)
+
+  note right of Block
+    Каждый блок содержит
+    prev_hash и подпись.
+    Канонизация — JCS/CBOR.
+  end note
+
+  note bottom of Node
+    Полная репликация:
+    цепочка + все блобы.
+  end note
+
+}
+@enduml

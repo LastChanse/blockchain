@@ -1,0 +1,55 @@
+@startuml
+title Диаграмма вариантов использования
+left to right direction
+
+actor "Пациент" as Patient
+actor "Врач" as Doctor
+actor "Представитель\nклиники" as ClinicRep
+actor "Узел\n(клиника)" as Node
+
+rectangle "Система хранения историй болезней на блокчейне" {
+
+  usecase "Зарегистрироваться\nв роли пациента" as UC_Register
+  usecase "Создать медицинскую\nзапись" as UC_CreateRecord
+  usecase "Прочитать свои\nмедицинские записи" as UC_ReadOwn
+  usecase "Проверить подлинность\nзаписи" as UC_VerifyOwn
+  usecase "Зарегистрировать\nврача" as UC_RegisterDoctor
+  usecase "Проголосовать\nза блок" as UC_Vote
+  usecase "Проверить целостность\nцепочки" as UC_CheckChain
+  usecase "Синхронизировать\nцепочку с другими узлами" as UC_Sync
+
+  ' Связи актёров
+  Patient --> UC_Register
+  Patient --> UC_ReadOwn
+  Patient --> UC_VerifyOwn
+
+  Doctor --> UC_CreateRecord
+  Doctor --> UC_ReadOwn
+
+  ClinicRep --> UC_RegisterDoctor
+  ClinicRep --> UC_Vote
+
+  Node --> UC_Vote
+  Node --> UC_CheckChain
+  Node --> UC_Sync
+
+  UC_CreateRecord ..> UC_Register : <<include>>
+  UC_ReadOwn ..> UC_VerifyOwn : <<include>>
+  UC_Vote ..> UC_CheckChain : <<include>>
+
+  UC_VerifyOwn <.. UC_ReadOwn : <<extend>>
+}
+
+note right of UC_CreateRecord
+  Врач шифрует запись
+  публичным ключом пациента
+  и подписывает её своим ключом.
+end note
+
+note bottom of UC_CheckChain
+  Пересчёт хешей,
+  сверка с предыдущим хэшом,
+  сигнал при расхождении.
+end note
+
+@enduml

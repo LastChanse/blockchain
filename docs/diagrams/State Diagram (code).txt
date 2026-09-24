@@ -1,0 +1,113 @@
+@startuml
+skinparam state {
+  BackgroundColor Blue
+  BorderColor DarkBlue
+  ArrowColor DarkBlue
+}
+skinparam note {
+  BackgroundColor Black
+  BorderColor Orange
+}
+
+title Диаграмма состояний: жизненный цикл блока
+
+[*] --> Создан : Врач/узел формирует блок\n(тип, данные, prev_hash)
+
+state "Создан" as Created
+note right of Created
+  Блок содержит:
+  - type (medical_record / clinic_registry / ...)
+  - timestamp
+  - prev_hash (хеш предыдущего блока)
+  - payload (метаданные или ссылка на блоб)
+  - schema_version
+end note
+
+Created --> Canonicalized : canonicalize()\n(JCS/CBOR)
+
+state "Канонизирован" as Canonicalized
+note right of Canonicalized
+  Данные приведены к каноническому виду.
+  Только после этого можно считать хеш —
+  иначе хеш не будет воспроизводим.
+end note
+
+Canonicalized --> Hashed : hash = H(canonical_bytes)
+
+state "Хеширован" as Hashed
+note right of Hashed
+  Хеш блока вычислен.
+  Он уникален и воспроизводим.
+  Любое изменение данных → другой хеш.
+end note
+
+Hashed --> Signed : Врач подписывает\nсвоим приватным ключом
+
+state "Подписан" as Signed
+note right of Signed
+  Подпись врача = неотказуемость.
+  Теперь блок нельзя изменить,
+  не сломав подпись.
+end note
+
+Signed --> Proposed : Узел рассылает блок\nдругим узлам сети
+
+state "Предложен" as Proposed
+note right of Proposed
+  Блок отправлен всем узлам консорциума.
+  Каждый узел проверяет:
+  - хеш prev_hash совпадает?
+  - подпись валидна?
+  - формат корректен?
+end note
+
+Proposed --> Validated : Все узлы проверили блок
+
+state "Проверен" as Validated
+note right of Validated
+  Узел либо принимает блок,
+  либо отклоняет (если проверка не прошла).
+end note
+
+Validated --> Voting : Узлы голосуют\n(представители клиник)
+
+state "Голосование" as Voting
+note right of Voting
+  Каждый представитель клиники
+  подписывает блок своим ключом.
+  Это его голос "за".
+end note
+
+Voting --> Accepted : Кворум собран\n(большинство клиник)
+Voting --> Rejected : Кворум не собран\nили обнаружено расхождение
+
+state "Принят" as Accepted
+note right of Accepted
+  Блок добавлен в цепочку.
+  Все узлы обновили свою копию.
+  Хеш блока зафиксирован.
+end note
+
+state "Отклонён" as Rejected
+note right of Rejected
+  Блок не добавлен в цепочку.
+  Узлы игнорируют его.
+  Возможные причины:
+  - неверная подпись
+  - prev_hash не совпадает
+  - недостаточно голосов
+end note
+
+Accepted --> Finalized : Блок стал частью истории
+Rejected --> [*]
+
+state "Финализирован" as Finalized
+note right of Finalized
+  Блок нельзя изменить или удалить.
+  Любая попытка подмены
+  обнаружится при проверке хешей.
+end note
+
+Finalized --> [*]
+
+@enduml

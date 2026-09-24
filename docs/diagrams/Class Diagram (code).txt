@@ -1,0 +1,155 @@
+@startuml
+title Диаграмма классов
+
+' ---------- Ядро блокчейна ----------
+
+class Block {
+  + id : UUID
+  + type : BlockType
+  + timestamp : DateTime
+  + prev_hash : Hash
+  + hash : Hash
+  + signatures : List<Signature>
+  + verify() : bool
+  + canonicalize() : bytes
+}
+
+enum BlockType {
+  medical_record
+  patient_registry
+  clinic_registry
+  credential
+  credential_revocation
+}
+
+class MedicalRecord {
+  + id : UUID
+  + patient_id : String
+  + patient_pubkey : PublicKey
+  + doctor_id : String
+  + timestamp : DateTime
+  + schema_version : String
+  + encrypted_payload_hash : Hash
+  + encrypted_payload_ref : String
+  + doctor_signature : Signature
+  + verify() : bool
+}
+
+class PatientRegistry {
+  + patient_id : String
+  + public_key : PublicKey
+  + registered_at : DateTime
+}
+
+class ClinicRegistry {
+  + clinic_id : String
+  + public_key : PublicKey
+  + status : String
+  + voters : List<String>
+}
+
+class Credential {
+  + credential_id : UUID
+  + doctor_id : String
+  + clinic_id : String
+  + issued_at : DateTime
+  + expires_at : DateTime
+  + clinic_signature : Signature
+}
+
+class CredentialRevocation {
+  + credential_id : UUID
+  + revoked_by : String
+  + reason : String
+  + revoked_at : DateTime
+}
+
+class Blob {
+  + ref : String
+  + encrypted_data : bytes
+  + hash : Hash
+}
+
+' ---------- Участники ----------
+
+class Patient {
+  + patient_id : String
+  + public_key : PublicKey
+  + private_key : PrivateKey
+  + readOwnRecords() : List<MedicalRecord>
+  + verifyRecord(record : MedicalRecord) : bool
+}
+
+class Doctor {
+  + doctor_id : String
+  + clinic_id : String
+  + public_key : PublicKey
+  + private_key : PrivateKey
+  + createRecord(patient : Patient, data : bytes) : MedicalRecord
+}
+
+class ClinicRepresentative {
+  + rep_id : String
+  + clinic_id : String
+  + vote(block : Block) : Signature
+}
+
+class Clinic {
+  + clinic_id : String
+  + public_key : PublicKey
+  + isMember : bool
+  + vote(block : Block) : Signature
+}
+
+class Node {
+  + node_id : String
+  + chain : List<Block>
+  + blobs : Map<String, Blob>
+  + syncWith(other : Node) : void
+  + validateChain() : bool
+  + addBlock(block : Block) : bool
+}
+
+class Consensus {
+  + quorum : int
+  + collectVotes(block : Block, nodes : List<Node>) : bool
+  + isAccepted(block : Block) : bool
+}
+
+' ---------- Наследование ----------
+
+Block <|-- MedicalRecord
+Block <|-- PatientRegistry
+Block <|-- ClinicRegistry
+Block <|-- Credential
+Block <|-- CredentialRevocation
+
+' ---------- Ассоциации ----------
+
+Doctor --> MedicalRecord : создаёт
+Patient --> MedicalRecord : владеет
+Doctor --> Clinic : работает в
+ClinicRepresentative --> Clinic : представляет
+MedicalRecord --> PatientRegistry : ссылается на
+MedicalRecord --> Doctor : подписывает
+Credential --> Clinic : выдает
+CredentialRevocation --> Credential : отзывает
+
+Node --> Block : хранит
+Node --> Blob : хранит
+Consensus --> Node : координирует
+MedicalRecord --> Blob : содержит
+Clinic --> Node : запускает
+
+note right of Block
+  Каждый блок содержит
+  prev_hash и подписи.
+  Канонизация — JCS/CBOR.
+end note
+
+note bottom of Node
+  Полная репликация:
+  цепочка + все блобы.
+end note
+
+@enduml

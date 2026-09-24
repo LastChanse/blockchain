@@ -1,0 +1,64 @@
+@startuml
+title Диаграмма классов (Часть 1)
+
+package "Ядро блокчейна" {
+
+  class Block {
+    - id : UUID
+    - type : BlockType
+    - timestamp : DateTime
+    - prev_hash : Hash
+    - hash : Hash
+    - signatures : List<Signature>
+    + verify() : bool
+    + canonicalize() : bytes
+  }
+
+  enum BlockType {
+    medical_record
+    clinic_registry
+    credential
+    credential_revocation
+  }
+
+  class Node {
+    - node_id : String
+    - chain : List<Block>
+    - blobs : Map<String, Blob>
+    + syncWith(other : Node) : void
+    + validateChain() : bool
+    + addBlock(block : Block) : bool
+  }
+
+  class Consensus {
+    - quorum : int
+    + collectVotes(block : Block, nodes : List<Node>) : bool
+    + isAccepted(block : Block) : bool
+  }
+
+  class Blob {
+    - ref : String
+    - encrypted_data : bytes
+    - hash : Hash
+  }
+
+  Block --> BlockType : type
+  Node "1" *-- "0..*" Block : chain
+  Node "1" *-- "0..*" Blob : blobs
+  Node --> Consensus : запускает
+  Consensus --> Block : координирует
+  Block ..> Blob : ссылается на (encrypted_payload_ref)
+
+  note right of Block
+    Каждый блок содержит
+    prev_hash и подпись.
+    Канонизация — JCS/CBOR.
+  end note
+
+  note bottom of Node
+    Полная репликация:
+    цепочка + все блобы.
+  end note
+
+}
+@enduml
