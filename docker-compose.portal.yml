@@ -1,0 +1,10 @@
+services:
+  portal:
+    build: .
+    env_file: .env
+    environment:
+      NODE_ROLE: portal
+      NODE_ID: portal
+    ports:
+      - "8080:8000"
+    restart: unless-stopped
