@@ -19,7 +19,7 @@ blockchain-dev/
 ├── config/                              # Настройки Django-проекта
 │   ├── __init__.py
 │   ├── asgi.py
-│   ├── settings.py                      # ✏️ добавьте STATICFILES_DIRS
+│   ├── settings.py                      # ✏️ добавить STATICFILES_DIRS
 │   ├── urls.py                          # ✅ уже есть
 │   └── wsgi.py
 │
