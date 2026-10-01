@@ -1,3 +1,4 @@
+```
 blockchain-dev/
 │
 ├── clinic/                              # Приложение «Клиника» (врачи, узлы)
@@ -65,3 +66,4 @@ blockchain-dev/
 - **config/** — настройки Django, маршрутизация.
 - **scripts/** — вспомогательные скрипты.
 - **static/** — статика: CSS, JavaScript.
+```
