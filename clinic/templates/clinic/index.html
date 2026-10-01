@@ -1,12 +1,11 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="utf-8">
-    <title>Узел клиники</title>
-</head>
-<body>
-    <h1>Узел клиники</h1>
-    <p>NODE_ID: <b>{{ node_id }}</b></p>
-    <p>NODE_ROLE: <b>{{ node_role }}</b></p>
-</body>
-</html>
+{% extends "clinic/base.html" %}
+
+{% block title %}Узел {{ node_id }}{% endblock %}
+
+{% block content %}
+<h2>Узел клиники</h2>
+<dl>
+    <dt>ID узла:</dt><dd>{{ node_id }}</dd>
+    <dt>Роль:</dt><dd>{{ node_role }}</dd>
+</dl>
+{% endblock %}

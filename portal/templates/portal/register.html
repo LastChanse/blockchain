@@ -1,0 +1,40 @@
+{% extends "portal/base.html" %}
+{% load static %}
+
+{% block title %}Регистрация — Портал{% endblock %}
+
+{% block content %}
+<h2>Регистрация пациента</h2>
+<p>Ключи генерируются в браузере. Приватный ключ не покидает устройство.</p>
+
+<form id="register-form">
+    <label>Имя пользователя:
+        <input type="text" name="username" required>
+    </label>
+    <label>Пароль:
+        <input type="password" name="password" required>
+    </label>
+    <button type="submit">Сгенерировать ключи</button>
+</form>
+
+<div id="result"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/crypto.js' %}"></script>
+<script>
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const result = document.getElementById('result');
+    try {
+        const kp = await CryptoModule.generateKeyPair();
+        const pub = await CryptoModule.exportPublicKey(kp.publicKey);
+        await CryptoModule.storePrivateKey(form.username.value, kp.privateKey);
+        result.textContent = 'Ключи созданы. Публичный: ' + pub.slice(0, 40) + '...';
+    } catch (err) {
+        result.textContent = 'Ошибка: ' + err.message;
+    }
+});
+</script>
+{% endblock %}

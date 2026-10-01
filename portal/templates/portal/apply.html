@@ -1,0 +1,16 @@
+{% extends "portal/base.html" %}
+
+{% block title %}Заявка — Портал{% endblock %}
+
+{% block content %}
+<h2>Подача заявки</h2>
+<form>
+    <label>Клиника:
+        <input type="text" name="clinic_id" required>
+    </label>
+    <label>Комментарий:
+        <textarea name="comment"></textarea>
+    </label>
+    <button type="submit">Отправить</button>
+</form>
+{% endblock %}

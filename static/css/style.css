@@ -1,0 +1,180 @@
+/* === Базовое === */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f4f7fa;
+    color: #1f2937;
+    line-height: 1.6;
+}
+
+/* === Шапка === */
+header {
+    background: #1e3a5f;
+    color: #ffffff;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+header h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+nav a {
+    color: #cbd8e8;
+    margin-right: 1.25rem;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+nav a:hover {
+    color: #ffffff;
+}
+
+/* === Основной контент === */
+main {
+    max-width: 760px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+h2 {
+    color: #1e3a5f;
+    margin-top: 0;
+    font-size: 1.5rem;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 0.5rem;
+}
+
+h3 {
+    color: #1e3a5f;
+    font-size: 1.15rem;
+}
+
+p {
+    color: #374151;
+}
+
+ul {
+    padding-left: 1.25rem;
+}
+
+li {
+    margin-bottom: 0.4rem;
+}
+
+/* === Формы === */
+form label {
+    display: block;
+    margin-bottom: 1rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+form input,
+form textarea {
+    display: block;
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    margin-top: 0.3rem;
+    font-size: 1rem;
+    font-family: inherit;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    transition: border 0.2s, box-shadow 0.2s;
+    background: #ffffff;
+    color: #1f2937;
+}
+
+form input:focus,
+form textarea:focus {
+    outline: none;
+    border-color: #2e86de;
+    box-shadow: 0 0 0 3px rgba(46, 134, 222, 0.15);
+}
+
+form button {
+    background: #2e86de;
+    color: #ffffff;
+    border: none;
+    padding: 0.65rem 1.4rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+form button:hover {
+    background: #1e6fc4;
+}
+
+form button:active {
+    background: #1a5da8;
+}
+
+/* === Результаты / статусы === */
+#result,
+#status {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    background: #eef4fb;
+    color: #1e3a5f;
+    white-space: pre-wrap;
+    font-size: 0.95rem;
+    border-left: 4px solid #2e86de;
+}
+
+/* === DL (список определения) === */
+dl {
+    margin: 1rem 0;
+}
+
+dt {
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.75rem;
+}
+
+dd {
+    margin: 0.15rem 0 0 0;
+    font-size: 1.1rem;
+    color: #1e3a5f;
+    font-weight: 500;
+}
+
+/* === Футер === */
+footer {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin-top: 2rem;
+}
+
+/* === Адаптив === */
+@media (max-width: 600px) {
+    header {
+        padding: 1rem;
+    }
+
+    main {
+        margin: 1rem;
+        padding: 1.25rem;
+    }
+}

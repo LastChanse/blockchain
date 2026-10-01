@@ -1,11 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Портал клиник</title>
-</head>
-<body>
-    <h1>Портал заявок</h1>
-    <p>Заглушка. Форма будет позже.</p>
-</body>
-</html>
+{% extends "portal/base.html" %}
+
+{% block title %}Главная — Портал{% endblock %}
+
+{% block content %}
+<h2>Добро пожаловать</h2>
+<p>Здесь вы можете:</p>
+<ul>
+    <li>Зарегистрироваться и получить ключи.</li>
+    <li>Просмотреть свои медицинские записи.</li>
+    <li>Проверить подлинность записей.</li>
+</ul>
+{% endblock %}
