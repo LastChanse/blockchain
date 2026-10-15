@@ -1,0 +1,58 @@
+{
+  "blocks": [
+    {
+      "index": 0,
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "type": "genesis",
+      "timestamp": "2026-10-15T16:09:28.537054+00:00",
+      "payload": {
+        "msg": "genesis"
+      },
+      "hash": "e539897a1ccd79adeb6d2f3b8b64caef92d5dad4a65d8513e7038010b53d8d5b"
+    },
+    {
+      "index": 1,
+      "prev_hash": "e539897a1ccd79adeb6d2f3b8b64caef92d5dad4a65d8513e7038010b53d8d5b",
+      "type": "medical_record",
+      "timestamp": "2026-10-15T16:09:31.980070+00:00",
+      "payload": {
+        "patient_name": "1",
+        "diagnosis": "2"
+      },
+      "hash": "ead3acd98c4310e9ef062aec34cd10e3e660cde958a8180315240b2da31f0278"
+    },
+    {
+      "index": 2,
+      "prev_hash": "ead3acd98c4310e9ef062aec34cd10e3e660cde958a8180315240b2da31f0278",
+      "type": "medical_record",
+      "timestamp": "2026-10-15T16:11:23.447649+00:00",
+      "payload": {
+        "patient_name": "Игдрасиль",
+        "diagnosis": "Туберкулез"
+      },
+      "hash": "bbd6030220de25ca0cd7661d94fae75d2420e17f4c29fd78d1d79e4364cf1841"
+    },
+    {
+      "index": 3,
+      "prev_hash": "bbd6030220de25ca0cd7661d94fae75d2420e17f4c29fd78d1d79e4364cf1841",
+      "type": "medical_record",
+      "timestamp": "2026-10-15T16:12:25.354273+00:00",
+      "payload": {
+        "patient_name": "sk,jsdgj",
+        "diagnosis": "hsdflh"
+      },
+      "hash": "6f5da940c2c7f0dbdea01cfaed46a5402b77fb68f3c9f3907988cde6c2a665c3"
+    },
+    {
+      "index": 4,
+      "prev_hash": "6f5da940c2c7f0dbdea01cfaed46a5402b77fb68f3c9f3907988cde6c2a665c3",
+      "type": "medical_record",
+      "timestamp": "2026-10-15T16:12:51.041295+00:00",
+      "payload": {
+        "patient_name": "Имануил Гипсокартонович",
+        "diagnosis": "Слабоумие степени терминальной"
+      },
+      "hash": "6936865d76f0d5e2e622c2f9a70a49aad666846a3a2d108b5499a62c573b383d"
+    }
+  ]
+}

@@ -5,4 +5,5 @@ urlpatterns = [
     path("", views.index, name="portal-index"),
     path("apply/", views.apply, name="portal-apply"),
     path("register/", views.register, name="portal-register"),
+    path("data/", views.data, name="portal-data"),
 ]
