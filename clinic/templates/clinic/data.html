@@ -1,0 +1,32 @@
+{% extends "clinic/base.html" %}
+
+{% block title %}Данные — Узел клиники{% endblock %}
+
+{% block content %}
+<h2>Данные</h2>
+
+<h3>Список</h3>
+<ul>
+    {% for r in records %}
+        <li><small>{{ r.patient_name }} — {{ r.diagnosis }}</small></li>
+    {% empty %}
+        <li>Список пуст</li>
+    {% endfor %}
+</ul>
+
+<h3>Добавить</h3>
+<form method="post">
+    {% csrf_token %}
+    <p>
+        <label>Пациент:
+            <input type="text" name="patient_name" required>
+        </label>
+    </p>
+    <p>
+        <label>Диагноз:
+            <input type="text" name="diagnosis" required>
+        </label>
+    </p>
+    <button type="submit">Добавить</button>
+</form>
+{% endblock %}

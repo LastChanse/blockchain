@@ -1,0 +1,29 @@
+{% extends "clinic/base.html" %}
+
+{% block title %}Врач — Узел клиники{% endblock %}
+
+{% block content %}
+<h2>Все пациенты</h2>
+<ul>
+    {% for p in patients %}
+        <li>
+            {{ p.username }}
+            <form method="post" action="{% url 'clinic-doctor-assign' p.id %}" style="display:inline">
+                {% csrf_token %}
+                <button type="submit">Добавить себе</button>
+            </form>
+        </li>
+    {% empty %}
+        <li>Нет пациентов</li>
+    {% endfor %}
+</ul>
+
+<h2>Мои пациенты</h2>
+<ul>
+    {% for p in mine %}
+        <li>{{ p.username }}</li>
+    {% empty %}
+        <li>Пусто</li>
+    {% endfor %}
+</ul>
+{% endblock %}

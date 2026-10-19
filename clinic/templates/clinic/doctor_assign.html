@@ -1,0 +1,12 @@
+{% extends "clinic/base.html" %}
+
+{% block title %}Назначить — Узел клиники{% endblock %}
+
+{% block content %}
+<h2>Назначить пациента {{ patient_id }} себе?</h2>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Да</button>
+    <a href="{% url 'clinic-doctor-list' %}">Отмена</a>
+</form>
+{% endblock %}

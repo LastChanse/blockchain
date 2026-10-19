@@ -4,15 +4,27 @@
 {% block title %}Регистрация — Портал{% endblock %}
 
 {% block content %}
-<h2>Регистрация пациента</h2>
+<h2>Регистрация</h2>
 <p>Ключи генерируются в браузере. Приватный ключ не покидает устройство.</p>
 
-<form id="register-form">
+{% if error %}
+    <p style="color:red">{{ error }}</p>
+{% endif %}
+
+<form id="register-form" method="post" action="{% url 'portal-register' %}">
+    {% csrf_token %}
+    <input type="hidden" name="public_key" id="public_key">
     <label>Имя пользователя:
         <input type="text" name="username" required>
     </label>
     <label>Пароль:
         <input type="password" name="password" required>
+    </label>
+    <label>Роль:
+        <select name="role" required>
+            <option value="patient" selected>Пациент</option>
+            <option value="doctor">Врач</option>
+        </select>
     </label>
     <button type="submit">Сгенерировать ключи</button>
 </form>
@@ -24,14 +36,20 @@
 <script src="{% static 'js/crypto.js' %}"></script>
 <script>
 document.getElementById('register-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
     const form = e.target;
     const result = document.getElementById('result');
+    const pubField = document.getElementById('public_key');
+
+    if (pubField.value) return;
+
+    e.preventDefault();
     try {
         const kp = await CryptoModule.generateKeyPair();
         const pub = await CryptoModule.exportPublicKey(kp.publicKey);
         await CryptoModule.storePrivateKey(form.username.value, kp.privateKey);
+        pubField.value = pub;
         result.textContent = 'Ключи созданы. Публичный: ' + pub.slice(0, 40) + '...';
+        form.submit();
     } catch (err) {
         result.textContent = 'Ошибка: ' + err.message;
     }
