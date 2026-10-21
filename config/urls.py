@@ -16,10 +16,30 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
+from django.shortcuts import redirect
+
+# Умная функция перенаправления после входа
+def smart_login_redirect(request):
+    if request.user.is_authenticated:
+        # Если есть профиль врача или это админ -> идем в клинику
+        if hasattr(request.user, 'doctor_profile') or request.user.is_superuser:
+            return redirect('clinic-index')
+        # Иначе -> идем в портал
+        else:
+            return redirect('portal-index')
+    return redirect('login')
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("accounts/", include("django.contrib.auth.urls")),
+    
+    # Стандартные страницы входа/выхода
+    path("accounts/login/", auth_views.LoginView.as_view(template_name="registration/login.html"), name="login"),
+    path("accounts/logout/", auth_views.LogoutView.as_view(), name="logout"),
+    
+    # Наш умный редирект (сюда будет кидать после входа)
+    path("accounts/redirect/", smart_login_redirect, name="smart-redirect"),
+
     path("portal/", include("portal.urls")),
     path("clinic/", include("clinic.urls")),
 ]

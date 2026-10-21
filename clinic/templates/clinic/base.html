@@ -6,23 +6,36 @@
     <title>{% block title %}Узел клиники{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
-<body>
-    <header>
+<body class="theme-clinic" data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
+    <header class="clinic-header">
         <h1>Узел клиники</h1>
         <nav>
-            <a href="{% url 'clinic-index' %}">Главная</a>
-            <a href="{% url 'clinic-data' %}">Данные</a>
-            <a href="{% url 'clinic-doctor-list' %}">Врач</a>
-            <a href="{% url 'portal-index' %}">Портал</a>
-            {% if user.is_authenticated %}
-                <span>Вы: {{ user.username }}</span>
-                <form method="post" action="{% url 'logout' %}" style="display:inline">
-                    {% csrf_token %}
-                    <button type="submit">Выйти</button>
-                </form>
-            {% else %}
-                <a href="{% url 'login' %}">Вход</a>
-            {% endif %}
+            <div class="nav-links">
+				<a href="{% url 'clinic-index' %}">Главная</a>
+				<a href="{% url 'clinic-data' %}" id="link-clinic-data">Данные</a>
+				
+				<!-- Кнопка "Врач" видна только тем, у кого есть профиль врача (чтобы не было 403) -->
+				{% if user.doctor_profile or user.is_superuser %}
+					<a href="{% url 'clinic-doctor-list' %}" id="link-clinic-doctor">Врач</a>
+				{% endif %}
+
+				<!-- Кнопка "Портал" видна только пациентам (у кого нет профиля врача) -->
+				{% if not user.doctor_profile and not user.is_superuser %}
+					<a href="{% url 'portal-index' %}">Портал</a>
+				{% endif %}
+			</div>
+            
+            <div class="user-info">
+                {% if user.is_authenticated %}
+                    <span style="color: #cbd8e8;">Вы: <strong>{{ user.username }}</strong></span>
+                    <form method="post" action="{% url 'logout' %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit">Выйти</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}">Вход</a>
+                {% endif %}
+            </div>
         </nav>
     </header>
 
@@ -31,8 +44,6 @@
     </main>
 
     <footer>Блокчейн. Больница. Узел клиники.</footer>
-
-    <script src="{% static 'js/api.js' %}"></script>
-    {% block scripts %}{% endblock %}
+	<script src="{% static 'js/auth-alert.js' %}"></script>
 </body>
 </html>

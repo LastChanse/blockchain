@@ -63,8 +63,13 @@ def _recompute(b):
     return hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
 
 
-def build_records_view(patient):
-    blocks = list_blocks(patient)
+def build_records_view(patient=None):
+    # Если patient передан — берем только его блоки. Если нет — берем ВСЕ блоки.
+    if patient:
+        blocks = list_blocks(patient)
+    else:
+        blocks = list(ChainBlock.objects.all().order_by("patient_id", "index"))
+        
     by_index = {b.index: b for b in blocks}
     records = []
     for b in blocks:
@@ -77,13 +82,16 @@ def build_records_view(patient):
         else:
             prev = by_index.get(b.index - 1)
             prev_link = "OK" if prev and b.prev_hash == prev.hash else "BROKEN"
-        line = (
-            f"{b.index:>3} | {b.hash[:12]}... | {recomputed[:12]}... | "
-            f"{match:<6} | {prev_link:<9} | {b.payload}"
-        )
+            
         records.append({
             "patient_name": b.payload.get("patient_name"),
-            "diagnosis": line,
+            "diagnosis": b.payload.get("diagnosis"),
+            "index": b.index,
+            "hash_short": f"{b.hash[:12]}...",
+            "hash_full": b.hash,
+            "recomputed_short": f"{recomputed[:12]}...",
+            "match": match,
+            "prev_link": prev_link,
         })
     return records
 

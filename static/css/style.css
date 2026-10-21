@@ -1,7 +1,5 @@
 /* === Базовое === */
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -12,32 +10,76 @@ body {
     line-height: 1.6;
 }
 
-/* === Шапка === */
+/* === Базовые настройки шапки (общие) === */
 header {
-    background: #1e3a5f;
     color: #ffffff;
     padding: 1rem 2rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    
+    display: flex;
+    flex-direction: column; 
+    gap: 0.75rem;
+}
+
+/* === Стиль для Портала пациента (синий) === */
+.portal-header {
+    background: #1e3a5f; /* Тот самый темно-синий */
+}
+
+/* === Стиль для Узла клиники (темно-зеленый / бирюзовый) === */
+.clinic-header {
+    background: #0f5132; /* Глубокий зеленый цвет (медицина/здоровье) */
 }
 
 header h1 {
-    margin: 0 0 0.5rem 0;
+    margin: 0;
     font-size: 1.4rem;
     font-weight: 600;
     letter-spacing: 0.3px;
 }
 
+/* Меню (в одну строку) */
+nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Ссылки влево, Вход/Выйти вправо */
+    flex-wrap: wrap; /* Если экран слишком узкий - перенесется */
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.25rem;
+}
+
 nav a {
     color: #cbd8e8;
-    margin-right: 1.25rem;
     text-decoration: none;
     font-size: 0.95rem;
     transition: color 0.2s;
 }
 
-nav a:hover {
-    color: #ffffff;
+nav a:hover { color: #ffffff; }
+
+/* Блок пользователя (Вход / Выйти) */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
+
+/* Кнопка Выйти */
+.user-info button {
+    background: #ef4444;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+    border-radius: 6px;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-weight: 500;
+}
+.user-info button:hover { background: #dc2626; }
 
 /* === Основной контент === */
 main {
@@ -50,29 +92,25 @@ main {
 }
 
 h2 {
-    color: #1e3a5f;
     margin-top: 0;
     font-size: 1.5rem;
     border-bottom: 2px solid #e5e7eb;
     padding-bottom: 0.5rem;
 }
-
-h3 {
-    color: #1e3a5f;
-    font-size: 1.15rem;
+.theme-portal h2 {
+    color: #1e3a5f; /* Синий в портале */
+}
+.theme-clinic h2 {
+    color: #0f5132; /* Зеленый в клинике */
 }
 
-p {
-    color: #374151;
-}
+h3 { font-size: 1.15rem; }
+.theme-portal h3 { color: #1e3a5f; }
+.theme-clinic h3 { color: #0f5132; }
 
-ul {
-    padding-left: 1.25rem;
-}
-
-li {
-    margin-bottom: 0.4rem;
-}
+p { color: #374151; }
+ul { padding-left: 1.25rem; }
+li { margin-bottom: 0.4rem; }
 
 /* === Формы === */
 form label {
@@ -82,8 +120,7 @@ form label {
     color: #374151;
 }
 
-form input,
-form textarea {
+form input, form textarea {
     display: block;
     width: 100%;
     padding: 0.55rem 0.75rem;
@@ -97,15 +134,28 @@ form textarea {
     color: #1f2937;
 }
 
+/* === Фокус на полях ввода === */
 form input:focus,
 form textarea:focus {
     outline: none;
+}
+
+/* Подсветка в Портале (синяя) */
+.theme-portal form input:focus,
+.theme-portal form textarea:focus {
     border-color: #2e86de;
     box-shadow: 0 0 0 3px rgba(46, 134, 222, 0.15);
 }
 
+/* Подсветка в Клинике (зеленая) */
+.theme-clinic form input:focus,
+.theme-clinic form textarea:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+/* === Кнопки === */
 form button {
-    background: #2e86de;
     color: #ffffff;
     border: none;
     padding: 0.65rem 1.4rem;
@@ -116,46 +166,27 @@ form button {
     transition: background 0.2s;
 }
 
-form button:hover {
+/* Кнопки в Портале (синие) */
+.theme-portal form button {
+    background: #2e86de;
+}
+.theme-portal form button:hover {
     background: #1e6fc4;
 }
 
-form button:active {
-    background: #1a5da8;
+/* Кнопки в Клинике (зеленые) */
+.theme-clinic form button {
+    background: #10b981; /* Изумрудный зеленый */
+}
+.theme-clinic form button:hover {
+    background: #059669; /* Темнее при наведении */
 }
 
-/* === Результаты / статусы === */
-#result,
-#status {
-    margin-top: 1rem;
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
-    background: #eef4fb;
-    color: #1e3a5f;
-    white-space: pre-wrap;
-    font-size: 0.95rem;
-    border-left: 4px solid #2e86de;
-}
-
-/* === DL (список определения) === */
-dl {
-    margin: 1rem 0;
-}
-
-dt {
-    font-weight: 600;
-    color: #6b7280;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 0.75rem;
-}
-
-dd {
-    margin: 0.15rem 0 0 0;
-    font-size: 1.1rem;
-    color: #1e3a5f;
-    font-weight: 500;
+textarea {
+    resize: vertical; 
+    min-height: 80px;
+    min-width: 100%;
+    max-width: 100%;
 }
 
 /* === Футер === */
@@ -167,14 +198,42 @@ footer {
     margin-top: 2rem;
 }
 
-/* === Адаптив === */
-@media (max-width: 600px) {
-    header {
-        padding: 1rem;
-    }
+/* === Блокчейн компоненты === */
+.card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
 
-    main {
-        margin: 1rem;
-        padding: 1.25rem;
-    }
+.badge {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 0.75em;
+    font-weight: 700;
+    border-radius: 0.25rem;
+}
+.badge-ok { background: #d1fae5; color: #065f46; }
+.badge-broken { background: #fee2e2; color: #991b1b; }
+
+.hash-text {
+    font-family: monospace;
+    font-size: 0.85em;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+}
+
+.table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.table th, .table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
+.table th { background: #f9fafb; font-weight: 600; color: #374151; }
+.table tr:hover { background: #f9fafb; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+
+@media (max-width: 768px) { 
+    .grid-2 { grid-template-columns: 1fr; } 
 }

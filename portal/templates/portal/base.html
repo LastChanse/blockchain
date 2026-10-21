@@ -6,24 +6,34 @@
     <title>{% block title %}Портал пациента{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
-<body>
-    <header>
+<body class="theme-portal" data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
+    <header class="portal-header">
         <h1>Портал пациента</h1>
         <nav>
-            <a href="{% url 'portal-index' %}">Главная</a>
-            <a href="{% url 'portal-register' %}">Регистрация</a>
-            <a href="{% url 'portal-apply' %}">Заявка</a>
-            <a href="{% url 'portal-data' %}">Данные</a>
-            <a href="{% url 'clinic-index' %}">Узел клиники</a>
-            {% if user.is_authenticated %}
-                <span>Вы: {{ user.username }}</span>
-                <form method="post" action="{% url 'logout' %}" style="display:inline">
-                    {% csrf_token %}
-                    <button type="submit">Выйти</button>
-                </form>
-            {% else %}
-                <a href="{% url 'login' %}">Вход</a>
-            {% endif %}
+            <div class="nav-links">
+				<a href="{% url 'portal-index' %}">Главная</a>
+				<a href="{% url 'portal-apply' %}">Заявка</a>
+				<a href="{% url 'portal-data' %}" id="link-portal-data">Данные</a>
+				
+				<!-- Кнопка "Узел клиники" видна ТОЛЬКО авторизованным врачам и суперюзерам -->
+				{% if user.is_authenticated and user.doctor_profile or user.is_superuser %}
+					<a href="{% url 'clinic-index' %}">Узел клиники</a>
+				{% endif %}
+			</div>
+
+            <div class="user-info">
+                {% if user.is_authenticated %}
+                    <span style="color: #cbd8e8;">Вы: <strong>{{ user.username }}</strong></span>
+                    <form method="post" action="{% url 'logout' %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit">Выйти</button>
+                    </form>
+                {% else %}
+                    <!-- Кнопки для неавторизованных: Регистрация и Вход -->
+                    <a href="{% url 'portal-register' %}">Регистрация</a>
+                    <a href="{% url 'login' %}">Вход</a>
+                {% endif %}
+            </div>
         </nav>
     </header>
 
@@ -32,8 +42,6 @@
     </main>
 
     <footer>Блокчейн. Больница. Портал пациента.</footer>
-
-    <script src="{% static 'js/api.js' %}"></script>
-    {% block scripts %}{% endblock %}
+    <script src="{% static 'js/auth-alert.js' %}"></script>
 </body>
 </html>

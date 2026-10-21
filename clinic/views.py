@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect, render
+from django.contrib.auth.models import User 
 
 from . import services
 
@@ -21,15 +22,29 @@ def index(request):
 @login_required
 def data(request):
     if request.method == "POST":
-        services.add_block(request.user, "medical_record", {
-            "patient_name": request.POST.get("patient_name"),
+        # Ищем пациента по имени, которое ввел врач
+        patient_name = request.POST.get("patient_name")
+        try:
+            # Ищем пользователя в базе по имени
+            target_patient = User.objects.get(username=patient_name)
+        except User.DoesNotExist:
+            # Если такого пациента нет, можно вывести ошибку (пока просто игнорируем или создадим)
+            # В идеале тут нужно вернуть форму с ошибкой
+            return render(request, "clinic/data.html", {
+                "records": services.build_records_view(None),
+                "error": f"Пациент с именем {patient_name} не найден"
+            })
+
+        # Добавляем блок для найденного пациента
+        services.add_block(target_patient, "medical_record", {
+            "patient_name": patient_name,
             "diagnosis": request.POST.get("diagnosis"),
         })
         return redirect(request.path)
+        
     return render(request, "clinic/data.html", {
-        "records": services.build_records_view(request.user),
+        "records": services.build_records_view(None),
     })
-
 
 @login_required
 def doctor_list(request):

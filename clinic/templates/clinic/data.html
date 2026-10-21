@@ -3,30 +3,73 @@
 {% block title %}Данные — Узел клиники{% endblock %}
 
 {% block content %}
-<h2>Данные</h2>
+<h2>Медицинские записи</h2>
+{% if error %}
+    <div class="card" style="background: #fee2e2; border-color: #f87171; color: #991b1b; margin-bottom: 1rem;">
+        <strong>Внимание:</strong> {{ error }}
+    </div>
+{% endif %}
 
-<h3>Список</h3>
-<ul>
-    {% for r in records %}
-        <li><small>{{ r.patient_name }} — {{ r.diagnosis }}</small></li>
-    {% empty %}
-        <li>Список пуст</li>
-    {% endfor %}
-</ul>
+{% if records %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Индекс</th>
+            <th>Пациент</th>
+            <th>Диагноз</th>
+            <th>Хеш</th>
+            <th>Статус хеша</th>
+            <th>Связь с пред.</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in records %}
+        <tr>
+            <td>#{{ r.index }}</td>
+            <td><strong>{{ r.patient_name }}</strong></td>
+            <td>{{ r.diagnosis }}</td>
+            <td><span class="hash-text" title="{{ r.hash_full }}">{{ r.hash_short }}</span></td>
+            <td>
+                {% if r.match == "OK" %}
+                    <span class="badge badge-ok">OK</span>
+                {% else %}
+                    <span class="badge badge-broken">BROKEN</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if r.prev_link == "OK" %}
+                    <span class="badge badge-ok">OK</span>
+                {% elif r.prev_link == "-" %}
+                    <span class="badge" style="background:#e5e7eb; color:#374151;">Генезис</span>
+                {% else %}
+                    <span class="badge badge-broken">BROKEN</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card"><p>Записей пока нет.</p></div>
+{% endif %}
 
-<h3>Добавить</h3>
-<form method="post">
+<hr style="margin: 2rem 0; border: 0; border-top: 1px solid #e5e7eb;">
+
+<h3>Добавить новую запись</h3>
+<form method="post" class="card">
     {% csrf_token %}
-    <p>
-        <label>Пациент:
-            <input type="text" name="patient_name" required>
-        </label>
-    </p>
-    <p>
-        <label>Диагноз:
-            <input type="text" name="diagnosis" required>
-        </label>
-    </p>
-    <button type="submit">Добавить</button>
+    <div class="grid-2">
+        <div>
+            <label>Пациент:
+                <input type="text" name="patient_name" required placeholder="Иванов И.И.">
+            </label>
+        </div>
+        <div>
+            <label>Диагноз:
+                <input type="text" name="diagnosis" required placeholder="ОРВИ">
+            </label>
+        </div>
+    </div>
+    <button type="submit" style="margin-top: 1rem;">Добавить запись в блокчейн</button>
 </form>
 {% endblock %}
