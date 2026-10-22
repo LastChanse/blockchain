@@ -31,7 +31,7 @@ def data(request):
             # Если такого пациента нет, можно вывести ошибку (пока просто игнорируем или создадим)
             # В идеале тут нужно вернуть форму с ошибкой
             return render(request, "clinic/data.html", {
-                "records": services.build_records_view(None),
+                "records": services.build_records_view(),
                 "error": f"Пациент с именем {patient_name} не найден"
             })
 
@@ -65,7 +65,7 @@ def data(request):
 def doctor_list(request):
     _require_doctor(request.user)
     return render(request, "clinic/doctor_list.html", {
-        "patients": services.list_available_patients(),
+        "patients": services.list_available_patients(request.user),
         "mine": services.list_doctor_patients(request.user),
     })
 

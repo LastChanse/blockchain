@@ -7,8 +7,10 @@ class ChainBlock(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="chain_blocks",
+        null=True,
+        blank=True
     )
-    index = models.PositiveIntegerField()
+    index = models.PositiveIntegerField(unique=True) 
     timestamp = models.CharField(max_length=64)
     prev_hash = models.CharField(max_length=64)
     hash = models.CharField(max_length=64)
@@ -16,7 +18,6 @@ class ChainBlock(models.Model):
     payload = models.JSONField(default=dict)
 
     class Meta:
-        unique_together = ("patient", "index")
         ordering = ("index",)
 
 
