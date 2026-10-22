@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.contrib.auth.models import User 
 
 from . import services
-
+from .models import DoctorProfile
 
 def _require_doctor(user):
     if not services.is_doctor(user):
@@ -35,6 +35,21 @@ def data(request):
                 "error": f"Пациент с именем {patient_name} не найден"
             })
 
+        # Проверка того, что пациент закреплен за врачом
+        try:
+            doctor_profile = request.user.doctor_profile
+        except DoctorProfile.DoesNotExist:
+            return render(request, "clinic/data.html", {
+                "records": services.build_records_view(None),
+                "error": "У текущего пользователя нет профиля врача",
+            })
+
+        if not doctor_profile.patients.filter(pk=target_patient.pk).exists():
+            return render(request, "clinic/data.html", {
+                "records": services.build_records_view(None),
+                "error": f"Пациент {patient_name} не закреплён за вами",
+            })
+
         # Добавляем блок для найденного пациента
         services.add_block(target_patient, "medical_record", {
             "patient_name": patient_name,
@@ -50,7 +65,7 @@ def data(request):
 def doctor_list(request):
     _require_doctor(request.user)
     return render(request, "clinic/doctor_list.html", {
-        "patients": services.list_all_patients(),
+        "patients": services.list_available_patients(),
         "mine": services.list_doctor_patients(request.user),
     })
 
@@ -59,6 +74,8 @@ def doctor_list(request):
 def doctor_assign(request, patient_id):
     _require_doctor(request.user)
     if request.method == "POST":
+        if request.user.doctor_profile.patients.filter(pk=patient_id).exists():
+            return redirect("clinic-doctor-list")
         services.assign_patient(request.user, patient_id)
         return redirect("clinic-doctor-list")
     return render(request, "clinic/doctor_assign.html", {"patient_id": patient_id})
