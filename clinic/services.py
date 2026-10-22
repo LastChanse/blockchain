@@ -17,12 +17,12 @@ def _last_global():
 
 @transaction.atomic
 def _ensure_genesis():
-    """Создает единый Genesis-блок, если цепочка пуста."""
-    if _last_global() is not None:
+    if ChainBlock.objects.exists():
         return
     header = BlockHeader(prev_hash=GENESIS_PREV_HASH, type="genesis")
-    block = Block(index=0, header=header, payload={"msg": "global genesis"})
-    block.hash = block.compute_hash()
+    block = Block(index=0, header=header, payload={"msg": "genesis"})
+    
+    
     ChainBlock.objects.create(
         patient=None,
         index=0,
@@ -31,11 +31,12 @@ def _ensure_genesis():
         hash=block.hash,
         type=block.header.type,
         payload=block.payload,
+        content_hash=block.header.content_hash,
     )
 
 
 @transaction.atomic
-def add_block(patient, type_, payload):
+def add_block(patient, type_, payload, content_hash=""):
     """Добавляет блок в глобальную цепочку."""
     _ensure_genesis()
     
@@ -45,7 +46,6 @@ def add_block(patient, type_, payload):
     
     header = BlockHeader(prev_hash=last.hash, type=type_)
     block = Block(index=last.index + 1, header=header, payload=payload)
-    block.hash = block.compute_hash()
     
     return ChainBlock.objects.create(
         patient=patient,
@@ -55,6 +55,7 @@ def add_block(patient, type_, payload):
         hash=block.hash,
         type=block.header.type,
         payload=block.payload,
+        content_hash=block.header.content_hash
     )
 
 
@@ -73,6 +74,7 @@ def _recompute(b):
         "prev_hash": b.prev_hash,
         "type": b.type,
         "timestamp": b.timestamp,
+        "content_hash": b.content_hash,
         "payload": b.payload,
     }
     return hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
@@ -166,7 +168,7 @@ def validate_chain():
                 "error": f"Пропущен предыдущий блок (ожидался индекс {b.index - 1})"
             }
 
-        # 2. Проверка собственного хэша блока
+        # 2. Проверка собственного хэша блока (Block Hash)
         recomputed = _recompute(b)
         if b.hash != recomputed:
             return False, {
@@ -174,13 +176,30 @@ def validate_chain():
                 "error": f"Хэш блока не совпадает! В БД: {b.hash[:8]}..., Пересчитан: {recomputed[:8]}..."
             }
         
-        # 3. Проверка связи с предыдущим блоком (не разорвана ли цепочка)
+        # 3. Проверка связи с предыдущим блоком (Prev Hash)
         if b.index > 0:
             prev = by_index[b.index - 1]
             if b.prev_hash != prev.hash:
                 return False, {
                     "index": b.index, 
                     "error": f"Ссылка на предыдущий блок неверна! Указан: {b.prev_hash[:8]}..., Реальный: {prev.hash[:8]}..."
+                }
+
+        # 4. Проверка хэша содержимого записи (Content Hash)
+        if b.type == "medical_record" and b.content_hash:
+            import hashlib
+            from core.block import canonical_json
+            
+            # Пересчитываем хэш от payload, который лежит в БД
+            recomputed_content_hash = hashlib.sha256(
+                canonical_json(b.payload).encode("utf-8")
+            ).hexdigest()
+            
+            # Сравниваем с тем, что сохранено в БД
+            if b.content_hash != recomputed_content_hash:
+                return False, {
+                    "index": b.index, 
+                    "error": "Хэш содержимого записи не совпадает (Content Hash mismatch)! Данные подменены."
                 }
                 
     return True, None

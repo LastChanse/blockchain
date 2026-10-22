@@ -21,6 +21,8 @@ def index(request):
 
 @login_required
 def data(request):
+    is_valid, error_info = services.validate_chain()
+
     if request.method == "POST":
         # Ищем пациента по имени, которое ввел врач
         patient_name = request.POST.get("patient_name")
@@ -32,6 +34,8 @@ def data(request):
             # В идеале тут нужно вернуть форму с ошибкой
             return render(request, "clinic/data.html", {
                 "records": services.build_records_view(),
+                "is_valid": is_valid,
+                "error_info": error_info,
                 "error": f"Пациент с именем {patient_name} не найден"
             })
 
@@ -41,12 +45,16 @@ def data(request):
         except DoctorProfile.DoesNotExist:
             return render(request, "clinic/data.html", {
                 "records": services.build_records_view(None),
+                "is_valid": is_valid,
+                "error_info": error_info,
                 "error": "У текущего пользователя нет профиля врача",
             })
 
         if not doctor_profile.patients.filter(pk=target_patient.pk).exists():
             return render(request, "clinic/data.html", {
                 "records": services.build_records_view(None),
+                "is_valid": is_valid,
+                "error_info": error_info,
                 "error": f"Пациент {patient_name} не закреплён за вами",
             })
 
@@ -56,8 +64,6 @@ def data(request):
             "diagnosis": request.POST.get("diagnosis"),
         })
         return redirect(request.path)
-
-    is_valid, error_info = services.validate_chain()
         
     return render(request, "clinic/data.html", {
         "records": services.build_records_view(),

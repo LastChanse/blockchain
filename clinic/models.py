@@ -15,6 +15,7 @@ class ChainBlock(models.Model):
     prev_hash = models.CharField(max_length=64)
     hash = models.CharField(max_length=64)
     type = models.CharField(max_length=64)
+    content_hash = models.CharField(max_length=64, blank=True, default="")
     payload = models.JSONField(default=dict)
 
     class Meta:
