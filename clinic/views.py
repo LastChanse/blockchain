@@ -56,9 +56,13 @@ def data(request):
             "diagnosis": request.POST.get("diagnosis"),
         })
         return redirect(request.path)
+
+    is_valid, error_info = services.validate_chain()
         
     return render(request, "clinic/data.html", {
-        "records": services.build_records_view(None),
+        "records": services.build_records_view(),
+        "is_valid": is_valid,
+        "error_info": error_info,
     })
 
 @login_required

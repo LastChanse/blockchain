@@ -144,3 +144,43 @@ def assign_patient(doctor_user, patient_id):
 def list_doctor_patients(doctor_user):
     profile = DoctorProfile.objects.filter(user=doctor_user).first()
     return list(profile.patients.all()) if profile else []
+
+def validate_chain():
+    """
+    Проходит по всей цепочке от начала до конца.
+    Возвращает кортеж (is_valid, error_info).
+    error_info содержит индекс блока и текст ошибки, если цепочка сломана.
+    """
+    blocks = list(ChainBlock.objects.all().order_by("index"))
+    
+    if not blocks:
+        return True, None # Пустая цепочка
+
+    by_index = {b.index: b for b in blocks}
+
+    for b in blocks:
+        # 1. Проверка: не пропущен ли блок (дырка в индексах)
+        if b.index > 0 and (b.index - 1) not in by_index:
+            return False, {
+                "index": b.index, 
+                "error": f"Пропущен предыдущий блок (ожидался индекс {b.index - 1})"
+            }
+
+        # 2. Проверка собственного хэша блока
+        recomputed = _recompute(b)
+        if b.hash != recomputed:
+            return False, {
+                "index": b.index, 
+                "error": f"Хэш блока не совпадает! В БД: {b.hash[:8]}..., Пересчитан: {recomputed[:8]}..."
+            }
+        
+        # 3. Проверка связи с предыдущим блоком (не разорвана ли цепочка)
+        if b.index > 0:
+            prev = by_index[b.index - 1]
+            if b.prev_hash != prev.hash:
+                return False, {
+                    "index": b.index, 
+                    "error": f"Ссылка на предыдущий блок неверна! Указан: {b.prev_hash[:8]}..., Реальный: {prev.hash[:8]}..."
+                }
+                
+    return True, None

@@ -4,6 +4,17 @@
 
 {% block content %}
 <h2>Медицинские записи</h2>
+{% if is_valid %}
+    <div class="card" style="background: #dcfce7; border-color: #86efac; color: #166534; margin-bottom: 1rem;">
+        <strong>Цепочка валидна.</strong> Все хэши сходятся, разрывов не обнаружено.
+    </div>
+{% else %}
+    <div class="card" style="background: #fee2e2; border-color: #f87171; color: #991b1b; margin-bottom: 1rem;">
+        <strong>Цепочка скомпрометирована!</strong><br>
+        Обнаружена проблема в блоке <b>#{{ error_info.index }}</b>: {{ error_info.error }}
+    </div>
+{% endif %}
+
 {% if error %}
     <div class="card" style="background: #fee2e2; border-color: #f87171; color: #991b1b; margin-bottom: 1rem;">
         <strong>Внимание:</strong> {{ error }}
