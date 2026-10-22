@@ -41,6 +41,7 @@ class BlockHeader:
 
     prev_hash: str
     type: str
+    content_hash: str = "" 
     timestamp: str = field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
@@ -49,7 +50,8 @@ class BlockHeader:
         return (
             f"BlockHeader(type={self.type!r}, "
             f"prev_hash={self.prev_hash[:8]}…, "
-            f"timestamp={self.timestamp})"
+            f"timestamp={self.timestamp})",
+            f"content_hash={self.content_hash[:8] if self.content_hash else 'None'}…)"
         )
 
 
@@ -66,6 +68,14 @@ class Block:
     payload: dict
     hash: str = ""
 
+    def __post_init__(self):
+        if not self.header.content_hash:
+            raw = canonical_json(self.payload).encode("utf-8")
+            self.header.content_hash = hashlib.sha256(raw).hexdigest()
+            
+        if not self.hash:
+            self.hash = self.compute_hash()
+
     def _hashable_body(self) -> dict:
         """Каноничное представление блока для подсчёта хэша."""
         return {
@@ -73,6 +83,7 @@ class Block:
             "prev_hash": self.header.prev_hash,
             "type": self.header.type,
             "timestamp": self.header.timestamp,
+            "content_hash": self.header.content_hash,
             "payload": self.payload,
         }
 
@@ -86,6 +97,7 @@ class Block:
             "prev_hash": self.header.prev_hash,
             "type": self.header.type,
             "timestamp": self.header.timestamp,
+            "content_hash": self.header.content_hash,
             "payload": self.payload,
             "hash": self.hash,
         }
