@@ -1,49 +1,68 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: portal
+      POSTGRES_USER: clinic
+      POSTGRES_PASSWORD: clinic
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clinic -d portal"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    # fsync=off только для демо на Windows — сильно снижает I/O
+    command: >
+      postgres
+      -c shared_buffers=128MB
+      -c max_connections=40
+      -c fsync=off
+      -c synchronous_commit=off
+      -c full_page_writes=off
+
   portal:
     build: .
     env_file: .env
     environment:
       NODE_ROLE: portal
       NODE_ID: portal
-    ports:
-      - "8080:8000"
+      DATABASE_URL: postgres://clinic:clinic@db:5432/portal
+    ports: ["8080:8000"]
+    depends_on:
+      db: { condition: service_healthy }
+    restart: unless-stopped
 
-  clinic0:
+  node0:
     build: .
     env_file: .env
     environment:
       NODE_ROLE: clinic
-      NODE_ID: clinic0
-      DATABASE_URL: postgres://clinic:clinic@db0:5432/clinic
-    depends_on: [db0]
+      NODE_ID: node0
+      DATABASE_URL: postgres://clinic:clinic@db:5432/node0
+    depends_on:
+      db: { condition: service_healthy }
 
-  db0:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: clinic
-      POSTGRES_USER: clinic
-      POSTGRES_PASSWORD: clinic
-    volumes:
-      - pgdata0:/var/lib/postgresql/data
-
-  clinic1:
+  node1:
     build: .
     env_file: .env
     environment:
       NODE_ROLE: clinic
-      NODE_ID: clinic1
-      DATABASE_URL: postgres://clinic:clinic@db1:5432/clinic
-    depends_on: [db1]
+      NODE_ID: node1
+      DATABASE_URL: postgres://clinic:clinic@db:5432/node1
+    depends_on:
+      db: { condition: service_healthy }
 
-  db1:
-    image: postgres:16-alpine
+  node2:
+    build: .
+    env_file: .env
     environment:
-      POSTGRES_DB: clinic
-      POSTGRES_USER: clinic
-      POSTGRES_PASSWORD: clinic
-    volumes:
-      - pgdata1:/var/lib/postgresql/data
+      NODE_ROLE: clinic
+      NODE_ID: node2
+      DATABASE_URL: postgres://clinic:clinic@db:5432/node2
+    depends_on:
+      db: { condition: service_healthy }
 
 volumes:
-  pgdata0:
-  pgdata1:
+  pgdata:
