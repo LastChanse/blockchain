@@ -41,6 +41,7 @@ services:
       NODE_ROLE: clinic
       NODE_ID: node0
       DATABASE_URL: postgres://clinic:clinic@db:5432/node0
+    ports: ["8081:8000"]
     depends_on:
       db: { condition: service_healthy }
 
@@ -51,6 +52,7 @@ services:
       NODE_ROLE: clinic
       NODE_ID: node1
       DATABASE_URL: postgres://clinic:clinic@db:5432/node1
+    ports: ["8082:8000"]
     depends_on:
       db: { condition: service_healthy }
 
@@ -61,6 +63,7 @@ services:
       NODE_ROLE: clinic
       NODE_ID: node2
       DATABASE_URL: postgres://clinic:clinic@db:5432/node2
+    ports: ["8083:8000"]
     depends_on:
       db: { condition: service_healthy }
 

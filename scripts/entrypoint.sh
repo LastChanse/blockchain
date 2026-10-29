@@ -33,3 +33,4 @@ exec gunicorn config.wsgi:application \
   --threads "${GUNICORN_THREADS:-4}" \
   --access-logfile - \
   --error-logfile -
+  --error-logfile -

@@ -19,6 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Сокращение для удобства чтения переменных среды
 env = environ.Env(
     DJANGO_DEBUG=(bool, False),
+    DJANGO_ALLOWED_HOSTS=(list, ["*"]),
 )
 
 # Чтение переменных среды
@@ -31,21 +32,17 @@ environ.Env.read_env(BASE_DIR / ".env")
 SECRET_KEY = env.str("DJANGO_SECRET_KEY", "django-insecure")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.str("DJANGO_DEBUG", "0") == "1"
+DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["*"])
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default="*")
 
 CSRF_TRUSTED_ORIGINS = env.list(
     "CSRF_TRUSTED_ORIGINS",
     default=[
-        "http://localhost:8080",
-        "http://127.0.0.1:8080",
-        "http://localhost:8081",
-        "http://127.0.0.1:8081",
-        "http://localhost:8082",
-        "http://127.0.0.1:8082",
-        "http://localhost:8083",
-        "http://127.0.0.1:8083",
+        "http://localhost:8080", "http://127.0.0.1:8080",
+        "http://localhost:8081", "http://127.0.0.1:8081",
+        "http://localhost:8082", "http://127.0.0.1:8082",
+        "http://localhost:8083", "http://127.0.0.1:8083",
     ],
 )
 
@@ -92,38 +89,14 @@ TEMPLATES = [
 NODE_ROLE = env.str("NODE_ROLE", "clinic")
 NODE_ID   = env.str("NODE_ID", "node-0")
 
-if NODE_ROLE == "clinic":
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME":     env.str("POSTGRES_DB", "clinic"),
-            "USER":     env.str("POSTGRES_USER", "clinic"),
-            "PASSWORD": env.str("POSTGRES_PASSWORD", "clinic"),
-            "HOST":     env.str("POSTGRES_HOST", "db"),
-            "PORT":     env.str("POSTGRES_PORT", "5432"),
-        }
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "portal.sqlite3",
-        }
-    }
-
-WSGI_APPLICATION = 'config.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    "default": env.db(
+        "DATABASE_URL",
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+    )
 }
 
+WSGI_APPLICATION = 'config.wsgi.application'
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -160,8 +133,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
 
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/accounts/redirect/'
