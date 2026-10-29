@@ -54,3 +54,4 @@ coverage.xml
 *.mo
 *.pot
 
+.env
