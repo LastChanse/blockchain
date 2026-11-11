@@ -1,17 +1,14 @@
-# scripts/rebuild.ps1
-# Полная пересборка всех образов и перезапуск стека.
-# Использовать после правки settings.py, Dockerfile, requirements.txt.
 $ErrorActionPreference = "Stop"
 
-Write-Host "==> docker compose build --no-cache" -ForegroundColor Cyan
-docker compose build
+Write-Host "==> docker compose up -d db" -ForegroundColor Cyan
+docker compose up -d db
 
-if ($LASTEXITCODE -ne 0) { throw "build failed" }
+Write-Host "==> миграции" -ForegroundColor Cyan
+docker compose up -d portal node0
+Start-Sleep -Seconds 5
+docker compose exec portal python manage.py makemigrations portal
+docker compose exec node0 python manage.py makemigrations clinic
 
-Write-Host "==> docker compose up -d" -ForegroundColor Cyan
-docker compose up -d
-
-if ($LASTEXITCODE -ne 0) { throw "up failed" }
-
-Write-Host "==> docker compose ps" -ForegroundColor Cyan
+Write-Host "==> сборка и запуск" -ForegroundColor Cyan
+docker compose up -d --build
 docker compose ps

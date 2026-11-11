@@ -25,6 +25,7 @@ PY
 fi
 
 python manage.py migrate --noinput
+python manage.py seed_genesis || true
 python manage.py collectstatic --noinput || true
 
 exec gunicorn config.wsgi:application \

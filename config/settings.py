@@ -46,6 +46,8 @@ CSRF_TRUSTED_ORIGINS = env.list(
     ],
 )
 
+INTERNAL_SYNC_TOKEN = env.str("INTERNAL_SYNC_TOKEN", "change-me-internal-token")
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -139,3 +141,5 @@ STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else 
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/accounts/redirect/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
+
+PEERS = env.list("PEERS", default=[])

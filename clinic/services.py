@@ -203,3 +203,91 @@ def validate_chain():
                 }
                 
     return True, None
+
+def local_height():
+    """Высота локальной цепочки. -1, если блоков нет."""
+    last = ChainBlock.objects.order_by("-index").first()
+    return last.index if last else -1
+
+
+def local_last_hash():
+    """Хеш последнего блока. GENESIS_PREV_HASH, если блоков нет."""
+    last = ChainBlock.objects.order_by("-index").first()
+    return last.hash if last else GENESIS_PREV_HASH
+
+
+def validate_incoming_block(data):
+    """
+    Проверяет входящий блок от другой ноды.
+
+    Возвращает (ok: bool, error: str | None).
+    Не пишет в БД — только проверка.
+    """
+    required = ("index", "prev_hash", "type", "timestamp", "content_hash", "payload", "hash")
+    for field in required:
+        if field not in data:
+            return False, f"missing field: {field}"
+
+    try:
+        index = int(data["index"])
+    except (TypeError, ValueError):
+        return False, "index is not an integer"
+
+    # 1. Пересобираем Block и считаем хеш
+    try:
+        header = BlockHeader(
+            prev_hash=data["prev_hash"],
+            type=data["type"],
+            timestamp=data["timestamp"],
+            content_hash=data["content_hash"],
+        )
+        block = Block(index=index, header=header, payload=data["payload"])
+        computed_hash = block.compute_hash()
+    except Exception as e:
+        return False, f"cannot rebuild block: {e}"
+
+    # 2. Хеш блока
+    if computed_hash != data["hash"]:
+        return False, (
+            f"hash mismatch: sent={data['hash'][:12]}…, computed={computed_hash[:12]}…"
+        )
+
+    # 3. Content hash (для medical_record)
+    if data["type"] == "medical_record" and data["content_hash"]:
+        recomputed_ch = hashlib.sha256(
+            canonical_json(data["payload"]).encode("utf-8")
+        ).hexdigest()
+        if data["content_hash"] != recomputed_ch:
+            return False, "content_hash mismatch: payload подменён"
+
+    # 4. Индекс должен идти сразу за локальным
+    expected_index = local_height() + 1
+    if index != expected_index:
+        return False, f"index gap: expected {expected_index}, got {index}"
+
+    # 5. prev_hash должен совпадать с локальным последним
+    expected_prev = local_last_hash()
+    if data["prev_hash"] != expected_prev:
+        return False, (
+            f"prev_hash mismatch: expected {expected_prev[:12]}…, got {data['prev_hash'][:12]}…"
+        )
+
+    return True, None
+
+
+def add_block_from_dict(data):
+    """
+    Сохраняет уже провалидированный блок в ChainBlock.
+    Пациент не привязывается (сеть не передаёт patient_id),
+    но payload сохраняется как есть.
+    """
+    return ChainBlock.objects.create(
+        patient=None,
+        index=int(data["index"]),
+        timestamp=data["timestamp"],
+        prev_hash=data["prev_hash"],
+        hash=data["hash"],
+        type=data["type"],
+        payload=data["payload"],
+        content_hash=data["content_hash"],
+    )
