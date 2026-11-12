@@ -1,0 +1,116 @@
+{% extends "clinic/base.html" %}
+
+{% block title %}Сеть — Узел клиники{% endblock %}
+
+{% block content %}
+<h2>Сеть узлов</h2>
+
+<div class="card">
+    <p><strong>Этот узел:</strong> {{ node_id }} ({{ node_role }})</p>
+    <p><strong>Высота локальной цепочки:</strong> #{{ local_height }}</p>
+    <p><strong>Соседи (PEERS):</strong>
+        {% if peer_nodes_setting %}{{ peer_nodes_setting|join:", " }}
+        {% else %}<em>не заданы</em>{% endif %}
+    </p>
+</div>
+
+<h3>Состояние соседей</h3>
+{% if peers_info %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Адрес</th>
+            <th>Онлайн</th>
+            <th>ID</th>
+            <th>Высота</th>
+            <th>Последний хэш</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in peers_info %}
+        <tr>
+            <td><code>{{ p.peer }}</code></td>
+            <td>
+                {% if p.online %}
+                    <span class="badge badge-ok">online</span>
+                {% else %}
+                    <span class="badge badge-broken">offline</span>
+                {% endif %}
+            </td>
+            <td>{{ p.node_id|default:"—" }}</td>
+            <td>{% if p.height is not None %}#{{ p.height }}{% else %}—{% endif %}</td>
+            <td>
+                {% if p.last_hash %}
+                    <span class="hash-text">{{ p.last_hash|slice:":12" }}...</span>
+                {% else %}—{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card"><p>Соседи не настроены (пустой PEERS в .env).</p></div>
+{% endif %}
+
+<h3>Действия</h3>
+<form method="post" class="card">
+    {% csrf_token %}
+    <button type="submit" name="action" value="sync">
+        Синхронизироваться с соседями
+    </button>
+    <button type="submit" name="action" value="broadcast_last" style="margin-left:0.5rem;">
+        Разослать последний блок
+    </button>
+</form>
+
+{% if sync_report %}
+<h3>Отчёт синхронизации</h3>
+<table class="table">
+    <thead>
+        <tr><th>Сосед</th><th>Принято блоков</th><th>Ошибки</th></tr>
+    </thead>
+    <tbody>
+        {% for r in sync_report %}
+        <tr>
+            <td><code>{{ r.peer }}</code></td>
+            <td>{{ r.accepted }}</td>
+            <td>
+                {% for e in r.errors %}
+                    <div style="color:#991b1b;">
+                        {% if e.index %}блок #{{ e.index }}: {% endif %}{{ e.error }}
+                    </div>
+                {% empty %}—{% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if broadcast_report %}
+<h3>Отчёт рассылки</h3>
+<table class="table">
+    <thead>
+        <tr><th>Сосед</th><th>HTTP</th><th>Ответ</th></tr>
+    </thead>
+    <tbody>
+        {% for r in broadcast_report %}
+        <tr>
+            <td><code>{{ r.peer }}</code></td>
+            <td>{{ r.status_code|default:"—" }}</td>
+            <td>
+                {% if r.error %}
+                    <span style="color:#991b1b;">{{ r.error }}</span>
+                {% elif r.ok %}
+                    <span class="badge badge-ok">accepted</span>
+                    {% if r.index %} блок #{{ r.index }}{% endif %}
+                {% else %}
+                    <span style="color:#991b1b;">{{ r.error|default:"отклонён" }}</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

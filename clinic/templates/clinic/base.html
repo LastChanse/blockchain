@@ -13,6 +13,7 @@
             <div class="nav-links">
 				<a href="{% url 'clinic-index' %}">Главная</a>
 				<a href="{% url 'clinic-data' %}" id="link-clinic-data">Данные</a>
+				<a href="{% url 'clinic-network' %}">Сеть</a>
 				
 				<!-- Кнопка "Врач" видна только тем, у кого есть профиль врача (чтобы не было 403) -->
 				{% if user.doctor_profile or user.is_superuser %}

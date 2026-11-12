@@ -8,6 +8,10 @@ urlpatterns = [
     path("doctor/assign/<int:patient_id>/", views.doctor_assign, name="clinic-doctor-assign"),
     path("internal/users", internal_views.sync_user, name="internal-sync-user"),
 
+    # UI страницы «Сеть»
+    path("network/", views.network, name="clinic-network"),
+
+    # API для пиров
     path("network/height", network_views.network_height, name="network-height"),
     path("network/blocks", network_views.network_blocks, name="network-blocks"),
 ]
